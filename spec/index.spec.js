@@ -28,7 +28,7 @@ function setupResponses(client, responses) {
   configureResponse();
 }
 
-describe('axiosRetry(axios, { retries, retryCondition })', () => {
+describe('axiosRetry(axios, { retries, retryCondition, onRetry })', () => {
   afterEach(() => {
     nock.cleanAll();
     nock.enableNetConnect();
@@ -81,6 +81,22 @@ describe('axiosRetry(axios, { retries, retryCondition })', () => {
 
         client.get('http://example.com/test').then(result => {
           expect(result.status).toBe(200);
+          done();
+        }, done.fail);
+      });
+
+      it('should trigger onRetry', (done) => {
+        const client = axios.create();
+        const onRetry = jasmine.createSpy().and.callFake(() => {});
+        setupResponses(client, [
+          () => nock('http://example.com').get('/test').replyWithError(NETWORK_ERROR),
+          () => nock('http://example.com').get('/test').reply(200, 'It worked!')
+        ]);
+
+        axiosRetry(client, { retries: 1, retryCondition: () => true, onRetry });
+
+        client.get('http://example.com/test').then(() => {
+          expect(onRetry).toHaveBeenCalledTimes(1);
           done();
         }, done.fail);
       });

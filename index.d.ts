@@ -14,7 +14,14 @@ export interface IAxiosRetryConfig {
    * 
    * @type {Function}
    */
-  retryCondition?: (error: axios.AxiosError) => boolean
+  retryCondition?: (error: axios.AxiosError) => boolean,
+
+  /**
+   * A callback triggered when a request is retried.
+   * 
+   * @type {Function}
+   */
+  onRetry?: (error: axios.AxiosError) => void
 }
 
 export interface IAxiosRetry {

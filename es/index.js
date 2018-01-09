@@ -154,7 +154,8 @@ export default function axiosRetry(axios, defaultOptions) {
 
     const {
       retries = 3,
-      retryCondition = isNetworkOrIdempotentRequestError
+      retryCondition = isNetworkOrIdempotentRequestError,
+      onRetry = null
     } = getRequestOptions(config, defaultOptions);
 
     const currentState = getCurrentState(config);
@@ -173,6 +174,10 @@ export default function axiosRetry(axios, defaultOptions) {
         const lastRequestDuration = Date.now() - currentState.lastRequestTime;
         // Minimum 1ms timeout (passing 0 or less to XHR means no timeout)
         config.timeout = Math.max(config.timeout - lastRequestDuration, 1);
+      }
+
+      if (onRetry) {
+        onRetry(error);
       }
 
       return axios(config);
